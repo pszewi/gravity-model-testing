@@ -1,10 +1,18 @@
 import pandas as pd
+import numpy as np
+
+df_gravity = pd.read_csv("data\Gravity_V202211.csv", chunksize=200, nrows=10_000)
+
+gravity_new = pd.DataFrame()
+
+cols = ['year', 'country_id_d','country_id_o', 'distw_arithmetic',  
+        'gdp_ppp_pwt_d','gdp_ppp_pwt_o','tradeflow_imf_d', 'tradeflow_imf_o']
+
+for chunk in df_gravity:
+    subset = chunk[chunk['year'] >= 2000][cols].dropna()
+    gravity_new = pd.concat([gravity_new,subset])
+
+print(gravity_new.shape)
 
 
-df_gravity = pd.read_csv("data\Gravity_V202211.csv", index_col=['year'], chunksize=200)
 
-# working with "print(next(df_gravity))" allows you to load the file in 'chunks' (note the 'chunksize' in pd.read_csv)  
-# i.e. every time you copy and paste this command it will print another chunk 
-print(next(df_gravity))
-# print(next(df_gravity)) can see for yourself :)
-# print(next(df_gravity))
