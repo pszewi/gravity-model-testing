@@ -4,7 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.formula.api as sm
 
-df_gravity = pd.read_csv("..\data\Gravity_V202211.csv", chunksize=2000)
+# if you want to run it as a jupyter notebook file you have to add "..\" in front of data
+df_gravity = pd.read_csv("data\Gravity_V202211.csv", chunksize=2000)
 
 gravity_new = pd.DataFrame()
 
@@ -28,7 +29,8 @@ oecd_iso = ['AUT', 'BEL', 'CAN', 'CHE', 'CHL', 'COL', 'CRI', 'CZE', 'DEU',
 gravity_new = gravity_new[(gravity_new['iso3_d'].isin(oecd_iso)) & (gravity_new['iso3_o'].isin(oecd_iso))]
 
 # making fixed effects dummies
-
+dummies = pd.get_dummies(gravity_new['iso3_o'])
+gravity_new = gravity_new.join(dummies)
 
 # log transformations of variables for regression
 gravity_new['log_dist'] = np.log(gravity_new['distw_arithmetic'])
@@ -37,11 +39,17 @@ gravity_new['log_trade_o'] = np.log(gravity_new['tradeflow_imf_o'])
 gravity_new['log_gdp_d'] = np.log(gravity_new['gdp_ppp_pwt_d'])
 gravity_new['log_gdp_o'] = np.log(gravity_new['gdp_ppp_pwt_o'])
 
-# logged tradeflow reported by exporter to distance
-sns.lmplot(x='distw_arithmetic', y='log_trade_d',data=gravity_new, col='year', col_wrap=3)
-plt.show()
+# base for the regression equation
+reg_expression = 'log_trade_o ~ log_gdp_o + log_gdp_d + log_dist'
+dumm_names = dummies.columns
 
+# a for loop to add all of the dummies to the regression equation
+for i in range(len(dumm_names)):
+    if i < 37:
+        reg_expression = reg_expression + ' + ' + dumm_names[i]
+    else:
+        None
 
 # trying to regress the standard gravity model 
-reg1 = sm.ols(formula='log_trade_o ~ log_gdp_o + log_gdp_d + log_dist', data=gravity_new[gravity_new['year']==2009]).fit()
+reg1 = sm.ols(formula=reg_expression, data=gravity_new).fit()
 print(reg1.summary())
