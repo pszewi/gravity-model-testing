@@ -15,7 +15,7 @@ dummies = pd.get_dummies(gravity_new[['iso3_o', 'iso3_d']], prefix=['o','d'])
 gravity_new = gravity_new.join(dummies)
 
 # base for the regression equation
-reg_expression = 'log_trade_o ~ log_gdp_o + log_gdp_d + log_dist'
+reg_expression = 'log_trade_o ~ log_gdp_o + log_gdp_d + log_dist + year'
 dumm_names = dummies.columns
 
 # a for loop to add all of the dummies to the regression equation
@@ -29,7 +29,7 @@ for i in range(len(dumm_names)):
         None
 
 # trying to regress the standard gravity model 
-reg1 = sm.ols(formula=reg_expression, data=gravity_new).fit()
+reg1 = sm.ols(formula=reg_expression, data=gravity_new).fit(cov_type='HAC', cov_kwds={'maxlags':1})
 print(reg1.summary())
 
 
